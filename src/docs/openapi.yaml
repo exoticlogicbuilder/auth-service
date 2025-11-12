@@ -1,0 +1,79 @@
+openapi: 3.0.0
+info:
+  title: Auth Service API
+  version: "1.0.0"
+servers:
+  - url: http://localhost:4000
+paths:
+  /api/auth/register:
+    post:
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "201":
+          description: Created
+  /api/auth/login:
+    post:
+      summary: Login (email/password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "200": { description: "OK" }
+  /api/auth/refresh-token:
+    post:
+      summary: Refresh tokens
+      responses:
+        "200": { description: "New access token" }
+  /api/auth/logout:
+    post:
+      summary: Logout (revoke refresh token)
+      responses:
+        "200": { description: "OK" }
+  /api/auth/verify-email:
+    get:
+      summary: Verify email with token
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200": { description: "Verified" }
+  /api/auth/forgot-password:
+    post:
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email: { type: string }
+  /api/auth/reset-password:
+    post:
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                token: { type: string }
+                newPassword: { type: string }
