@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import "express-async-errors";
 import { authRouter } from "./routes/auth.routes";
+import { emailTestRouter } from "./routes/email-test.routes";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import logger from "./utils/logger";
@@ -20,6 +21,7 @@ app.use(cookieParser());
 app.use(cors({ origin: process.env.FRONTEND_URL ?? true, credentials: true }));
 
 app.use("/api/auth", authRouter);
+app.use("/api/email-test", emailTestRouter);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 app.get("/health", (_, res) => res.json({ ok: true }));
