@@ -7,9 +7,17 @@ import { signAccessToken } from "../services/token.service";
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: "email and password required" });
-  const { user, verificationToken } = await authService.registerUser(name, email, password);
-  await sendVerificationEmail(email, verificationToken);
-  res.status(201).json({ id: user.id, email: user.email });
+  try {
+    const { user, verificationToken } = await authService.registerUser(name, email, password);
+    await sendVerificationEmail(email, verificationToken);
+    res.status(201).json({ id: user.id, email: user.email });
+  } catch (err: any) {
+    logger.error("Registration failed", { err: err?.message ?? err });
+    if (err?.message?.includes("already exists")) {
+      return res.status(409).json({ message: err.message });
+    }
+    return res.status(500).json({ message: "Registration failed" });
+  }
 };
 
 export const login = async (req: Request, res: Response) => {

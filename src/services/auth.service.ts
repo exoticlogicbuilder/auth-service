@@ -9,6 +9,11 @@ const prisma = new PrismaClient();
 const EMAIL_TOKEN_EXP_HOURS = Number(process.env.EMAIL_TOKEN_EXP_HOURS ?? 24);
 
 export const registerUser = async (name: string | undefined, email: string, password: string) => {
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    throw new Error("User with this email already exists");
+  }
+  
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
     data: {
