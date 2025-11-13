@@ -1,11 +1,12 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import logger from "../utils/logger";
+import { StringValue } from "ms";
 
 const accessSecret = process.env.JWT_ACCESS_SECRET!;
 const refreshSecret = process.env.JWT_REFRESH_SECRET!;
-const accessExp = process.env.ACCESS_TOKEN_EXP ?? "15m";
-const refreshExp = process.env.REFRESH_TOKEN_EXP ?? "7d";
+const accessExp = (process.env.ACCESS_TOKEN_EXP ?? "15m") as StringValue;
+const refreshExp = (process.env.REFRESH_TOKEN_EXP ?? "7d") as StringValue;
 
 export type AccessPayload = { userId: string; roles: string[]; jti?: string };
 

@@ -7,9 +7,24 @@ import { signAccessToken } from "../services/token.service";
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: "email and password required" });
-  const { user, verificationToken } = await authService.registerUser(name, email, password);
-  await sendVerificationEmail(email, verificationToken);
-  res.status(201).json({ id: user.id, email: user.email });
+  
+  try {
+    const { user, verificationToken } = await authService.registerUser(name, email, password);
+    await sendVerificationEmail(email, verificationToken);
+    res.status(201).json({ id: user.id, email: user.email });
+  } catch (error: any) {
+    logger.error("Registration failed:", error);
+    
+    if (error.message === "SendGrid API key is not configured") {
+      return res.status(500).json({ message: "Email service not configured properly" });
+    }
+    
+    if (error.message === "Failed to send verification email") {
+      return res.status(500).json({ message: "Failed to send verification email" });
+    }
+    
+    return res.status(500).json({ message: "Registration failed" });
+  }
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -57,10 +72,25 @@ export const verifyEmail = async (req: Request, res: Response) => {
 export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Missing email" });
-  const result = await authService.createPasswordResetToken(email);
-  if (!result) return res.json({ ok: true });
-  await sendResetPasswordEmail(email, result.resetToken);
-  res.json({ ok: true });
+  
+  try {
+    const result = await authService.createPasswordResetToken(email);
+    if (!result) return res.json({ ok: true });
+    await sendResetPasswordEmail(email, result.resetToken);
+    res.json({ ok: true });
+  } catch (error: any) {
+    logger.error("Forgot password failed:", error);
+    
+    if (error.message === "SendGrid API key is not configured") {
+      return res.status(500).json({ message: "Email service not configured properly" });
+    }
+    
+    if (error.message === "Failed to send reset password email") {
+      return res.status(500).json({ message: "Failed to send reset password email" });
+    }
+    
+    return res.status(500).json({ message: "Password reset request failed" });
+  }
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
