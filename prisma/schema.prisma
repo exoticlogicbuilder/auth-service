@@ -21,6 +21,7 @@ model User {
   emailVerified      Boolean  @default(false)
   roles              Role[]   @default([USER])
   refreshTokens      RefreshToken[]
+  emailTokens        EmailToken[]
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
