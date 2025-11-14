@@ -3,12 +3,31 @@ import { hashPassword, hashToken, comparePassword, compareTokenHash } from "../u
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "./token.service";
 import { randomBytes } from "crypto";
 import logger from "../utils/logger";
+import { validatePassword, validateEmail, validateName } from "../utils/validation.helper";
 
 const prisma = new PrismaClient();
 
 const EMAIL_TOKEN_EXP_HOURS = Number(process.env.EMAIL_TOKEN_EXP_HOURS ?? 24);
 
 export const registerUser = async (name: string | undefined, email: string, password: string) => {
+  if (!name || !validateName(name)) {
+    throw new Error("Name is required");
+  }
+
+  if (!email || !validateEmail(email)) {
+    throw new Error("Valid email is required");
+  }
+
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    throw new Error(passwordValidation.errors.join(", "));
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    throw new Error("Email already registered");
+  }
+
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
     data: {
@@ -115,6 +134,11 @@ export const createPasswordResetToken = async (email: string) => {
 };
 
 export const resetPasswordWithToken = async (rawToken: string, newPassword: string) => {
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.isValid) {
+    throw new Error(passwordValidation.errors.join(", "));
+  }
+
   const tokens = await prisma.emailToken.findMany({ where: { type: "reset", used: false } });
   for (const t of tokens) {
     if (await compareTokenHash(rawToken, t.tokenHash)) {

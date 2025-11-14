@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { v4 as uuidv4 } from "uuid";
+import { randomBytes } from "crypto";
 import logger from "../utils/logger";
 
 const accessSecret = process.env.JWT_ACCESS_SECRET!;
@@ -10,13 +10,13 @@ const refreshExp = process.env.REFRESH_TOKEN_EXP ?? "7d";
 export type AccessPayload = { userId: string; roles: string[]; jti?: string };
 
 export const signAccessToken = (payload: AccessPayload) => {
-  const jti = uuidv4();
+  const jti = randomBytes(16).toString("hex");
   const token = jwt.sign({ ...payload, jti }, accessSecret, { expiresIn: accessExp });
   return { token, jti };
 };
 
 export const signRefreshToken = (userId: string) => {
-  const jti = uuidv4();
+  const jti = randomBytes(16).toString("hex");
   const token = jwt.sign({ sub: userId, jti }, refreshSecret, { expiresIn: refreshExp });
   return { token, jti };
 };

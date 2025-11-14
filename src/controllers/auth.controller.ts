@@ -5,11 +5,54 @@ import logger from "../utils/logger";
 import { signAccessToken } from "../services/token.service";
 
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ message: "email and password required" });
-  const { user, verificationToken } = await authService.registerUser(name, email, password);
-  await sendVerificationEmail(email, verificationToken);
-  res.status(201).json({ id: user.id, email: user.email });
+  try {
+    const { name, email, password } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+    
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const { user, verificationToken } = await authService.registerUser(name, email, password);
+    
+    const tokens = await authService.createTokensForUser(user.id, user.roles as any);
+    
+    await sendVerificationEmail(email, verificationToken);
+    
+    res.cookie("refreshToken", tokens.refreshToken, { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: "lax", 
+      maxAge: 7 * 24 * 60 * 60 * 1000 
+    });
+    
+    res.status(201).json({ 
+      accessToken: tokens.accessToken,
+      user: {
+        id: user.id, 
+        name: user.name,
+        email: user.email,
+        roles: user.roles
+      }
+    });
+  } catch (error: any) {
+    if (error.message === "Email already registered") {
+      return res.status(409).json({ message: error.message });
+    }
+    if (error.message.includes("Password must") || 
+        error.message === "Name is required" ||
+        error.message === "Valid email is required") {
+      return res.status(400).json({ message: error.message });
+    }
+    throw error;
+  }
 };
 
 export const login = async (req: Request, res: Response) => {
