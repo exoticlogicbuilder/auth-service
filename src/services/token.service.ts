@@ -2,10 +2,10 @@ import jwt from "jsonwebtoken";
 import { randomBytes } from "crypto";
 import logger from "../utils/logger";
 
-const accessSecret = process.env.JWT_ACCESS_SECRET!;
-const refreshSecret = process.env.JWT_REFRESH_SECRET!;
-const accessExp = process.env.ACCESS_TOKEN_EXP ?? "15m";
-const refreshExp = process.env.REFRESH_TOKEN_EXP ?? "7d";
+const accessSecret: string = process.env.JWT_ACCESS_SECRET!;
+const refreshSecret: string = process.env.JWT_REFRESH_SECRET!;
+const accessExp: string = process.env.ACCESS_TOKEN_EXP ?? "15m";
+const refreshExp: string = process.env.REFRESH_TOKEN_EXP ?? "7d";
 
 export type AccessPayload = { userId: string; roles: string[]; jti?: string };
 
