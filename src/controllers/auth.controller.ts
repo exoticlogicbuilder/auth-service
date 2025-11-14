@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as authService from "../services/auth.service";
 import { sendVerificationEmail, sendResetPasswordEmail } from "../services/email.service";
 import logger from "../utils/logger";
-import { signAccessToken } from "../services/token.service";
+import { signAccessToken, verifyAccessToken } from "../services/token.service";
 
 export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -82,9 +82,26 @@ export const me = async (req: Request & { user?: any }, res: Response) => {
 export const internalVerifyToken = async (req: Request, res: Response) => {
   const token = req.body?.token;
   if (!token) return res.status(400).json({ message: "Missing token" });
+  
   try {
-    res.json({ ok: true, message: "Internal verify endpoint - implement verifyAccessToken for production" });
-  } catch (err) {
-    res.status(401).json({ ok: false });
+    const payload = verifyAccessToken(token);
+    res.json({ 
+      ok: true, 
+      valid: true, 
+      payload: {
+        userId: payload.userId,
+        roles: payload.roles,
+        jti: payload.jti,
+        exp: payload.exp
+      }
+    });
+  } catch (err: any) {
+    if (err.name === 'TokenExpiredError') {
+      res.status(401).json({ ok: false, valid: false, reason: "Token expired" });
+    } else if (err.name === 'JsonWebTokenError') {
+      res.status(401).json({ ok: false, valid: false, reason: "Invalid token" });
+    } else {
+      res.status(401).json({ ok: false, valid: false, reason: "Token verification failed" });
+    }
   }
 };
