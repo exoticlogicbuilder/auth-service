@@ -8,8 +8,8 @@ export const register = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: "email and password required" });
   const { user, verificationToken } = await authService.registerUser(name, email, password);
-  await sendVerificationEmail(email, verificationToken);
-  res.status(201).json({ id: user.id, email: user.email });
+  await sendVerificationEmail(email, verificationToken, user.name || undefined);
+  res.status(201).json({ id: user.id, email: user.email, message: "Verification email sent" });
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -44,11 +44,15 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const verifyEmail = async (req: Request, res: Response) => {
-  const token = req.query.token as string;
+  const token = (req.params.token || req.query.token) as string;
   if (!token) return res.status(400).json({ message: "Missing token" });
   try {
-    await authService.verifyEmailToken(token);
-    res.json({ ok: true });
+    const result = await authService.verifyEmailToken(token);
+    if (result) {
+      res.json({ ok: true, message: "Email verified successfully" });
+    } else {
+      res.status(400).json({ message: "Invalid or expired token" });
+    }
   } catch (err: any) {
     return res.status(400).json({ message: err?.message ?? "Invalid token" });
   }
@@ -59,7 +63,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
   if (!email) return res.status(400).json({ message: "Missing email" });
   const result = await authService.createPasswordResetToken(email);
   if (!result) return res.json({ ok: true });
-  await sendResetPasswordEmail(email, result.resetToken);
+  await sendResetPasswordEmail(email, result.resetToken, result.user.name || undefined);
   res.json({ ok: true });
 };
 
