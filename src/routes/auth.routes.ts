@@ -10,6 +10,7 @@ authRouter.post("/refresh-token", controller.refreshToken);
 authRouter.post("/logout", controller.logout);
 
 authRouter.get("/verify-email", controller.verifyEmail);
+authRouter.get("/verify/:token", controller.verifyEmail);
 authRouter.post("/forgot-password", controller.forgotPassword);
 authRouter.post("/reset-password", controller.resetPassword);
 
