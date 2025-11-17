@@ -11,13 +11,19 @@ export type AccessPayload = { userId: string; roles: string[]; jti?: string };
 
 export const signAccessToken = (payload: AccessPayload) => {
   const jti = uuidv4();
-  const token = jwt.sign({ ...payload, jti }, accessSecret, { expiresIn: accessExp });
+  const token = jwt.sign({ ...payload, jti }, accessSecret, { 
+    expiresIn: accessExp,
+    algorithm: 'HS256'
+  } as jwt.SignOptions);
   return { token, jti };
 };
 
 export const signRefreshToken = (userId: string) => {
   const jti = uuidv4();
-  const token = jwt.sign({ sub: userId, jti }, refreshSecret, { expiresIn: refreshExp });
+  const token = jwt.sign({ sub: userId, jti }, refreshSecret, { 
+    expiresIn: refreshExp,
+    algorithm: 'HS256'
+  } as jwt.SignOptions);
   return { token, jti };
 };
 
