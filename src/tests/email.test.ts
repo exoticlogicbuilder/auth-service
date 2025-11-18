@@ -23,14 +23,15 @@ describe("Email Service", () => {
       expect(logger.info).toHaveBeenCalled();
     });
 
-    it("should log info when SENDGRID_API_KEY is not set", async () => {
-      const originalApiKey = process.env.SENDGRID_API_KEY;
-      delete process.env.SENDGRID_API_KEY;
-
+    it("should log info with email link", async () => {
       await sendVerificationEmail(testEmail, testToken, testName);
-      expect(logger.info).toHaveBeenCalled();
-
-      process.env.SENDGRID_API_KEY = originalApiKey;
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Verification email would be sent"),
+        expect.objectContaining({
+          recipient: testEmail,
+          token: testToken
+        })
+      );
     });
   });
 
@@ -45,14 +46,15 @@ describe("Email Service", () => {
       expect(logger.info).toHaveBeenCalled();
     });
 
-    it("should log info when SENDGRID_API_KEY is not set", async () => {
-      const originalApiKey = process.env.SENDGRID_API_KEY;
-      delete process.env.SENDGRID_API_KEY;
-
+    it("should log info with reset link", async () => {
       await sendResetPasswordEmail(testEmail, testToken, testName);
-      expect(logger.info).toHaveBeenCalled();
-
-      process.env.SENDGRID_API_KEY = originalApiKey;
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Reset password email would be sent"),
+        expect.objectContaining({
+          recipient: testEmail,
+          token: testToken
+        })
+      );
     });
   });
 });

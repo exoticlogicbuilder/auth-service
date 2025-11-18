@@ -615,8 +615,8 @@ Authorization: Bearer <access_token>
 ✓ Sends verification email without name
 - Handles optional name parameter
 
-✓ Logs info when SENDGRID_API_KEY is not set
-- Graceful handling when email service unavailable
+✓ Logs info with email link
+- Logs verification email information with link and token
 
 #### Password Reset Email Tests
 ✓ Sends reset password email with correct parameters
@@ -625,8 +625,8 @@ Authorization: Bearer <access_token>
 ✓ Sends reset password email without name
 - Handles optional name parameter
 
-✓ Logs info when SENDGRID_API_KEY is not set
-- Graceful handling when email service unavailable
+✓ Logs info with reset link
+- Logs reset password email information with link and token
 
 **Summary:** 6/6 tests passing
 
@@ -830,7 +830,6 @@ model User {
   id                 String   @id @default(uuid())
   name               String?
   email              String   @unique
-  phone              String 
   passwordHash       String
   emailVerified      Boolean  @default(false)
   roles              Role[]   @default([USER])
@@ -845,7 +844,6 @@ model User {
 - `id`: Unique identifier (UUID)
 - `name`: Optional user name
 - `email`: Unique email address
-- `phone`: Phone number field
 - `passwordHash`: Bcrypt hashed password
 - `emailVerified`: Email verification status
 - `roles`: Array of roles (USER, ADMIN, REVIEWER)
@@ -1046,7 +1044,7 @@ JWT_REFRESH_SECRET=your_refresh_secret_key
 FRONTEND_URL=http://localhost:3000
 
 # Email (Optional)
-SENDGRID_API_KEY=your_sendgrid_key
+# No external provider required; emails are logged for development visibility
 
 # Server
 PORT=3000
